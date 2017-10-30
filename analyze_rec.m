@@ -2,7 +2,6 @@
 fs = 16000;
 sig = -ones(fs*2,1) + 2*rand([fs*2,1]); 
 dftsize = 513;
-nbintervals = floor(size(simin,1)/dftsize);
 %% initialize parameters
 [simin,nbsecs,fs]=initparams(sig,fs);
 %% run simulink recplay
@@ -12,17 +11,16 @@ out=simout.signals.values;
 soundsc(out, fs);
 %% plot spectograms
 figure('Name','Spectrogram');
+nbintervals = floor(size(simin,1)/dftsize); %isn't corect because of overlap -> approximation
+windoww = floor(size(simin(:,1),1)/nbintervals);
 
 subplot(2,1,1);
-[~,~,~,PSDin] = spectrogram(simin(:,1),window,[],dftsize,fs);
-
-window = floor(size(simin(:,1),1)/nbintervals);
-
-spectrogram(simin(:,1),window,[],dftsize,fs,'yaxis');
+[~,~,~,PSDin] = spectrogram(simin(:,1),windoww,[],dftsize,fs);
+spectrogram(simin(:,1),windoww,[],dftsize,fs,'yaxis');
 
 subplot(2,1,2);
-[~,~,~,PSDout] = spectrogram(out,window,[],dftsize,fs);
-spectrogram(out,window,[],dftsize,fs,'yaxis');
+[~,~,~,PSDout] = spectrogram(out,windoww,[],dftsize,fs);
+spectrogram(out,windoww,[],dftsize,fs,'yaxis');
 %% plot PSDs
 PSDinavg = mean(PSDin, 2);
 PSDoutavg = mean(PSDout, 2);
