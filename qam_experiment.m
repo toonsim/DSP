@@ -18,7 +18,7 @@ stem(output-input);
 errorprob = ber(input, output);
 
 %% Plot BER vs SNR
-sig2noise = (10:-1:-10)';
+sig2noise = (20:-1:-20)';
 figure('Name','Dependency BER of SNR');
 plot(sig2noise,arrayfun(@(x) ber(input,qam_demod(awgn(qam_mod(input,N_q,false),x),N_q)), sig2noise));
 xlabel('SNR [dB]');ylabel('BER');

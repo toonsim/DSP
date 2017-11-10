@@ -100,6 +100,7 @@ ylabel('Signal');
 %% Plot magnitude frequency response (2nd method)
 fresp = fft(h);
 Mfresp = abs(fresp(1:floor(length(fresp)/2),1));
+
 figure('Name','Frequency Domain 2nd Method');
 
 freqrange = linspace(0,fs/2,size(Mfresp,1));
