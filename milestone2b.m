@@ -1,6 +1,6 @@
 % Exercise session 4: DMT-OFDM transmission scheme
 %% Set parameters
-N_q = 4; % Number of bits per QAM symbol
+N_q = 6; % Number of bits per QAM symbol
 N_s = 100; % Number of symbols sent -> number of rows per frame
 N_c = 2*N+2; % Number of carrier frequencies of the ofdm (including DC + 4000Hz)
 CP_length = dim_h*2; %length of the cycle prefix
@@ -11,14 +11,13 @@ load('IRest.mat');
 dim_h = length(h);
 
 %% Bitloading
-bitloading = 1; % Set ON-OFF bitloading on (1) or off (0)
+threshold = 0.3; % threshold for which frequencies to be left out
 
 %% Convert BMP image to bitstream
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 
 %% ON OFF bit loading
-if (bitloading == 1)
-     threshold = 0.3;
+if (threshold > 0)
      
      H = abs(fft(h,N_c));
      H = H(1:N_s);
