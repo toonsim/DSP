@@ -1,6 +1,6 @@
-function [ output, H_est] = ofdm_demod_ch_est(Rx,dim_h,trainingsequence,CP_length,P,N_s,badfreq,nb_added,N_q)
+function [ output, H_est] = ofdm_demod_ch_est(Rx,dim_h,trainingsequence,CP_length,P,N_s,badfreq,nb_added,N_q,No_trainingblocks)
 
-    
+    trainblock_length = N_s;
     packet_fft = reshape(Rx,length(Rx)/P,P);
     packet_fft(1:CP_length,:) = []; % remove cycle prefix
     packetNoEQ = fft(packet_fft); % demodulate the signal components
@@ -13,20 +13,22 @@ function [ output, H_est] = ofdm_demod_ch_est(Rx,dim_h,trainingsequence,CP_lengt
         packetNoEQ(row_i,:) = []; 
         
     end
+    
     output = packetNoEQ(:); % put all the frames after one another in a vector
-    output=output(1:(end-nb_added/N_q)); % remove the zeroes that were added 
-                                    % to comply with the N_q and N_valid declared in milestone2b.m
-    c = trainingsequence(dim_h:end,1);
-    r = trainingsequence(dim_h:-1:1,1);
+    output = output(1:(end-nb_added/N_q)); % remove the zeroes that were added 
+   
+    H_est = zeros(trainblock_length,1);
+    for k = 0:(No_trainingblocks-1)
+        range = k*trainblock_length+1:((k+1)*trainblock_length);
+        H_est = H_est + 1/trainblock_length*output(range)./trainingsequence(range);
+    end
     
-    
-    X = toeplitz(c,r);
-    save ofdm X output
-    H_est = X\output(dim_h:end);
-    
-    
-    
+    output = reshape(output(length(trainingsequence)+1:end),...
+                trainblock_length,[]);
+    output = output./H_est;
+    output = output(:);
 
+    
     
 end
 
