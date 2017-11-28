@@ -23,10 +23,9 @@ function [ output, H_est] = ofdm_demod_ch_est(Rx,dim_h,trainingsequence,CP_lengt
         H_est = H_est + 1/trainblock_length*output(range)./trainingsequence(range);
     end
     
-    output = reshape(output(length(trainingsequence)+1:end),...
-                trainblock_length,[]);
-    output = output./H_est;
-    output = output(:);
+     output = output(1:trainblock_length);
+     output = output./H_est;
+     output = output(:);
 
     
     
