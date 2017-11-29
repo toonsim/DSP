@@ -1,16 +1,16 @@
 %% load impulse response
-load IRest
+load h_est
 dim_h = length(h);
 
 %% Set parameters
-N = 202; % DFT size = N_c
-N_q = 6; % No of bits in 1 QAM Symbol
+N = 1024/4; % DFT size = N_c
+N_q = 4; % No of bits in 1 QAM Symbol
 No_Trainingblocks = 100;
 CP_length = dim_h*2;
 SNRdB = inf;
 fs = 16000;
-x = linspace(0,1,fs)';
-pulse = sin(x);
+x = linspace(0,fs,fs)';
+pulse = sin(440*x*2*pi);
 
 %% Generate training block
 bitstream = randi([0, 1], (N/2-1)*N_q, 1);
@@ -48,9 +48,9 @@ sim('recplay');
 %% create output and align
 out=simout.signals.values;
 Rx_before = alignIO(out,pulse,fs);
-Rx = Rx_before(20:length(Tx)+20-1);
+Rx = Rx_before(1:length(Tx));
 
-%% Convolution with transferfunction
+%% Convolution with transferfunction`
 %Rx = fftfilt(h,Tx);
 %Rx = Tx;
 
@@ -80,6 +80,13 @@ rxBitstream = qam_demod(rxQamStream,N_q);
 
 biterrrat = ber(bitstream,rxBitstream);
 
+%% plot synchronized in and output
+
+figure('Name','Time Domain Result');
+load align;
+plot(simin(:,1));hold on;
+plot(out(-(delay+2*fs):end));
+xlim([1,5*fs]);
 
 
 

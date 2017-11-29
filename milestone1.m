@@ -13,7 +13,7 @@ noise_input = -ones(fs*2,1) + 2*rand([fs*2,1]);% white noise as signal
 x = [impulse;sine;noise_input]; 
 
 %% initialize parameters %% run simulink recplay %% create output
-[simin,nbsecs,fs]=initparams(x,fs);
+[simin,nbsecs,fs]=initparams1(x,fs);
 sim('recplay');
 out=simout.signals.values;
 
@@ -108,3 +108,5 @@ semilogy(freqrange, Mfresp);
 title('Impulse Response in Frequency Domain');
 xlabel('Frequency');
 ylabel('Magnitude');
+
+save h_est h;
