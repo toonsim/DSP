@@ -1,14 +1,15 @@
 % Exercise session 4: DMT-OFDM transmission scheme
-%% Set parameters
-N_q = 6; % Number of bits per QAM symbol
-N_s = 100; % Number of symbols sent -> number of rows per frame
-N_c = 2*N+2; % Number of carrier frequencies of the ofdm (including DC + 4000Hz)
-CP_length = dim_h*2; %length of the cycle prefix
-SNRdB = 0; % Signal to Noise ratio in dB 
 
 %% Load impulse Response
 load('IRest.mat');
 dim_h = length(h);
+
+%% Set parameters
+N_q = 6; % Number of bits per QAM symbol
+N_s = 100; % Number of symbols sent -> number of rows per frame
+N_c = 2*N_s+2; % Number of carrier frequencies of the ofdm (including DC + 4000Hz)
+CP_length = dim_h*2; %length of the cycle prefix
+SNRdB = 20; % Signal to Noise ratio in dB 
 
 %% Bitloading
 threshold = 0.3; % threshold for which frequencies to be left out
@@ -65,7 +66,7 @@ rxQamStream = ofdm_demod_eq(rxOfdmStream_noise,CP_length,P,N_s,fft(h, N_c),bad_c
 rxBitStream = qam_demod(rxQamStream,N_q);
 
 %% Compute BER
- berTransmission = ber(bitStream,rxBitStream);
+berTransmission = ber(bitStream,rxBitStream);
 
 %% Construct image from bitstream
 imageRx = bitstreamtoimage(rxBitStream, imageSize, bitsPerPixel);
