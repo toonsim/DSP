@@ -9,10 +9,10 @@ N_q = 6; % Number of bits per QAM symbol
 N_s = 100; % Number of symbols sent -> number of rows per frame
 N_c = 2*N_s+2; % Number of carrier frequencies of the ofdm (including DC + 4000Hz)
 CP_length = dim_h*2; %length of the cycle prefix
-SNRdB = 10; % Signal to Noise ratio in dB 
+SNRdB = 20; % Signal to Noise ratio in dB 
 
 %% Bitloading
-threshold = 0.3; % threshold for which frequencies to be left out
+threshold = 0.0; % threshold for which frequencies to be left out
 
 %% Convert BMP image to bitstream
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
