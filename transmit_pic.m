@@ -3,7 +3,7 @@ load h_est
 dim_h = length(h);
 
 %% Set parameters
-N = 1024/4; % DFT size = N_c
+N = 1024/2; % DFT size = N_c
 N_q = 4; % No of bits in 1 QAM Symbol
 L_t = 5; % No of frames per training packet
 L_d = 5; % No of frames per data packet
@@ -18,7 +18,7 @@ training_block = qam_mod(trainingBitStream,N_q,false);
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 
 %% ON-OFF Bitloading
-BWusage = 90;
+
 if (BWusage < 100)
    
     % First dummy transmission to eliminate bad frequency tones
@@ -33,9 +33,7 @@ if (BWusage < 100)
     dummy_out=simout.signals.values;
     dummy_Rx_before = alignIO(dummy_out,pulse,fs);
     dummy_Rx = dummy_Rx_before(1:length(dummy_Tx)); 
-    [dummy_Tx,dummy_H] = ofdm_demod_dummy(dummy_Rx,repmat(training_block,L_tinit,1),CP_length,L_tinit,N/2-1);
-    figure();
-    plot(abs(dummy_H));
+    [dummy_Tx,dummy_H] = ofdm_demod_dummy(dummy_Rx,repmat(training_block,L_tinit,1),CP_length,L_tinit,N/2-1); 
     dummy_bitstream = qam_demod(dummy_Tx,N_q);
     dummy_ber = ber(trainingBitStream,dummy_bitstream);
 
@@ -51,14 +49,6 @@ else
 end
 
 
-%% ON OFF bit loading
-BWusage = 70;
-if (BWusage < 100)
-     
-else
-    N_valid = N_s;
-    bad_carriers = [];
-end
 
 %% Make input bitstream correct length
 % The length of the bitstream should be a multiple of N_q*N_valid
@@ -119,8 +109,6 @@ Rx = Rx_before(1:length(Tx));
 %% OFDM demodulation
 [rxQamStream,H_est] = ofdm_demod_ch_est_training(Rx,training_block,N,L_t,L_d,CP_length,nb_data_packets,nb_added,N_q,bad_carriers);
 
-semilogy(abs(mean(H_est,2)));hold on; plot(abs(fft(h,N)));figure();
-plot(ifft(mean(H_est,2)));hold on; plot(h);
 
 %% QAM demodulation
 rxBitStream = qam_demod(rxQamStream,N_q);
@@ -130,23 +118,6 @@ berTransmission = ber(bitStream,rxBitStream);
 
 %% Construct image from bitstream
 imageRx = bitstreamtoimage(rxBitStream, imageSize, bitsPerPixel);
-
-%% Plot images
-figure('Name','Image');
-subplot(2,1,1); colormap(colorMap); image(imageData); axis image; title('Original image'); drawnow;
-subplot(2,1,2); colormap(colorMap); image(imageRx); axis image; title('Received image'); drawnow;
-
-%% Plot error
-figure('Name','Error');
-image(abs(imageData-imageRx));axis image; title('Difference between received and original image'); drawnow;
-
-%% plot synchronized in and output
-
-figure('Name','Time Domain Result');
-load align;
-plot(simin(:,1));hold on;
-plot(out(-(delay+2*fs):end));
-xlim([1.8*fs,5*fs]);
 
 
 

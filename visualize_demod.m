@@ -1,9 +1,15 @@
 
 %% OFDM demodulation visualization
 refresh_time = length(Rx)/nb_data_packets/fs;
-subplot(2,2,2);colormap(colorMap); image(imageData); axis image; title('Transmitted image'); drawnow;
 elapsedtime = 0;
 Hbad = zeros(N/2,1);
+figure('Name', 'Visualize OFDM');
+x0=10;
+y0=10;
+width=500;
+height=500;
+set(gcf,'units','points','position',[x0,y0,width,height])
+subplot(2,2,2);colormap(colorMap); image(imageData); axis image; title('Transmitted image'); drawnow;
 for k = 1:nb_data_packets
     elapsedtime = elapsedtime + refresh_time;
     if (k==nb_data_packets)
@@ -16,7 +22,7 @@ for k = 1:nb_data_packets
     if (k == 1)
         minh = min(hk)*1.10;
         maxh = max(hk)*1.10;
-        minH = 5e-4;
+        minH = 1e-6;
         maxH = 1;
     end
     
@@ -24,10 +30,10 @@ for k = 1:nb_data_packets
     
     
     Hbad(bad_carriers) = Hk(bad_carriers);
-    Hk(bad_carriers) = 0;
     
     
-    f = linspace(0,fs/2,(N/2));
+    
+    f = linspace(0,fs/2,(N/2))';
     subplot(2,2,3);semilogy(f,abs(Hk));hold on;semilogy(f,abs(Hbad));hold off;ylabel('Magnitude [dB]');xlabel('frequency [Hz]')
   
     title('Channel in frequency domain (No DC)'); ylim([minH,maxH]);
