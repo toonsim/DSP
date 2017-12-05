@@ -27,6 +27,8 @@ function [ output, H_est ] = ofdm_demod_ch_est_training(Rx, trainingblock, N, L_
              H_est(i,k+1) = Rx_trainingpacket(i,:)/Tx_trainblockpacket(i,:);
         end
         
+        H_est(:,k+1) = H_est(:,k+1);
+        
         datapacket([1,(N/2+1):end],:) = []; % remove DC component and conjugated copies
         
         datapacket(bad_carriers,:) = [];
@@ -34,9 +36,7 @@ function [ output, H_est ] = ofdm_demod_ch_est_training(Rx, trainingblock, N, L_
         H_eqk(bad_carriers,:) = [];
         datapacket = datapacket./H_eqk;
         
-        
-        length(output_range)
-        length(datapacket)
+       
         output(output_range) = datapacket(:);
         
     end

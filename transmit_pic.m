@@ -5,30 +5,59 @@ dim_h = length(h);
 %% Set parameters
 N = 1024/4; % DFT size = N_c
 N_q = 4; % No of bits in 1 QAM Symbol
-L_t = 10; % No of frames per training packet
-L_d = 10; % No of frames per data packet
+L_t = 5; % No of frames per training packet
+L_d = 5; % No of frames per data packet
 CP_length = dim_h*2; % length of the cyclic prefix of the ofdm stream
 fs = 16000; % sampling frequency
 
+%% Generate training block
+trainingBitStream = randi([0, 1], (N/2-1)*N_q, 1);
+training_block = qam_mod(trainingBitStream,N_q,false);
 
 %% Generate data bit stream
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 
 %% ON-OFF Bitloading
-threshold = 0.3;
-if (threshold > 0)
-     
-     H = abs(fft(h,N));
-     H = H(1:(N/2-1));
-     
-     bad_carriers = find(H < threshold);
-     
-     N_bad = length(bad_carriers);
-     N_valid = N/2-1-N_bad;
+BWusage = 90;
+if (BWusage < 100)
+   
+    % First dummy transmission to eliminate bad frequency tones
+    L_tinit = 80;
+    dummy_Tx = ofdm_mod(repmat(training_block,L_tinit,1),CP_length, L_tinit,N/2-1,[]);
+    x = linspace(0,fs/2,fs/2)';
+    A = linspace(0,1,fs/2)';
+    f = linspace(1,440,fs/2)';
+    pulse = [1;zeros(fs/2-1,1);A.*sin(2*pi*f.*x);sin(2*pi*440*x)];
+    [simin,nbsecs,fs] = initparams(dummy_Tx,fs,pulse);
+    sim('recplay');
+    dummy_out=simout.signals.values;
+    dummy_Rx_before = alignIO(dummy_out,pulse,fs);
+    dummy_Rx = dummy_Rx_before(1:length(dummy_Tx)); 
+    [dummy_Tx,dummy_H] = ofdm_demod_dummy(dummy_Rx,repmat(training_block,L_tinit,1),CP_length,L_tinit,N/2-1);
+    figure();
+    plot(abs(dummy_H));
+    dummy_bitstream = qam_demod(dummy_Tx,N_q);
+    dummy_ber = ber(trainingBitStream,dummy_bitstream);
+
+    H = dummy_H(1:(N/2-1));
+    N_bad = floor((1-BWusage/100)*(N/2-1));
+    [Hsort,Ni] = sort(H);
+    bad_carriers = sort(Ni(1:N_bad));
+    N_valid = N/2-1-N_bad;
 else
     N_valid = N/2-1;
     bad_carriers = [];
     N_bad = 0;
+end
+
+
+%% ON OFF bit loading
+BWusage = 70;
+if (BWusage < 100)
+     
+else
+    N_valid = N_s;
+    bad_carriers = [];
 end
 
 %% Make input bitstream correct length
@@ -58,10 +87,6 @@ nb_data_QAM_symbols = length(bitStream_correct_size)/N_q;
 nb_data_frames = nb_data_QAM_symbols/N_valid;  
 nb_data_packets = nb_data_frames/L_d;
 
-%% Generate training block
-trainingBitStream = randi([0, 1], (N/2-1)*N_q, 1);
-training_block = qam_mod(trainingBitStream,N_q,false);
-
 %% Generate training ofdm stream
 training_ofdm = ofdm_mod(repmat(training_block,L_t,1),CP_length,L_t,N/2-1,[]);
 
@@ -76,7 +101,6 @@ x = linspace(0,fs/2,fs/2)';
 A = linspace(0,1,fs/2)';
 f = linspace(1,440,fs/2)';
 pulse = [1;zeros(fs/2-1,1);A.*sin(2*pi*f.*x);sin(2*pi*440*x)];
-plot(A.*sin(2*pi*f.*x));
 [simin,nbsecs,fs] = initparams(Tx,fs,pulse);
 
 
@@ -92,7 +116,7 @@ Rx = Rx_before(1:length(Tx));
 %Rx = fftfilt(h,Tx);
 %Rx = Tx;
 
-%% Generate Received QAM Stream
+%% OFDM demodulation
 [rxQamStream,H_est] = ofdm_demod_ch_est_training(Rx,training_block,N,L_t,L_d,CP_length,nb_data_packets,nb_added,N_q,bad_carriers);
 
 semilogy(abs(mean(H_est,2)));hold on; plot(abs(fft(h,N)));figure();
