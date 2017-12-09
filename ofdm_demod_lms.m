@@ -18,7 +18,7 @@ function [ output, H_est] = ofdm_demod_lms(Rx, trainingblock, N, L_t,L_d,CP_leng
     datapacket = fft(datapacket((CP_length+1):end,:));
     datapacket([1,(N/2+1):end],:) = []; % remove DC and conjugates
     datapacket(bad_carriers,:) = []; % remove bad carriers
-    stepsize = 1;
+    stepsize = 0.1;
     
     W_i = 1./conj(H_est(1+setdiff(1:(N/2-1),bad_carriers),1))+rand(N/2-1,1)+rand(N/2-1,1)*1i;
     alpha = 1e-4;
